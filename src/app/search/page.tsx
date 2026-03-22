@@ -64,21 +64,31 @@ export default async function SearchPage(props: {
   let safeProperties = properties || [];
 
   // Filter by date availability if check_in/check_out provided
-  // In a real app, this would be done via a Postgres function or a secondary join
   if (searchParams.check_in && searchParams.check_out && typeof searchParams.check_in === 'string' && typeof searchParams.check_out === 'string') {
-    const checkIn = new Date(searchParams.check_in);
-    const checkOut = new Date(searchParams.check_out);
+    const checkInStr = searchParams.check_in;
+    const checkOutStr = searchParams.check_out;
     
-    // Fetch all bookings that overlap with these dates
-    const { data: busyProperties } = await supabase
+    // 1. Fetch all bookings that overlap with these dates
+    const { data: busyBookings } = await supabase
       .from('bookings')
       .select('property_id')
-      .neq('status', 'cancelled')
-      .or(`check_in.lt.${checkOut.toISOString()},check_out.gt.${checkIn.toISOString()}`);
+      .not('status', 'in', '("cancelled", "refunded")')
+      .or(`check_in.lt.${checkOutStr},check_out.gt.${checkInStr}`);
     
-    if (busyProperties) {
-      const busyIds = busyProperties.map(b => b.property_id);
-      safeProperties = safeProperties.filter(p => !busyIds.includes(p.id));
+    // 2. Fetch all manual blocks in this range
+    const { data: busyBlocked } = await supabase
+      .from('blocked_dates')
+      .select('property_id')
+      .gte('date', checkInStr)
+      .lt('date', checkOutStr);
+    
+    const busyIds = new Set([
+      ...(busyBookings?.map(b => b.property_id) || []),
+      ...(busyBlocked?.map(b => b.property_id) || [])
+    ]);
+    
+    if (busyIds.size > 0) {
+      safeProperties = safeProperties.filter(p => !busyIds.has(p.id));
     }
   }
 

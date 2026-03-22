@@ -41,6 +41,7 @@ export function FilterPanel({ categories = [], isMobile = false }: FilterPanelPr
   const router = useRouter();
   const searchParams = useSearchParams();
   
+  const [open, setOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([
     Number(searchParams.get('min_price')) || 50,
     Number(searchParams.get('max_price')) || 1500
@@ -199,23 +200,33 @@ export function FilterPanel({ categories = [], isMobile = false }: FilterPanelPr
 
   if (isMobile) {
     return (
-      <Sheet>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger
           render={
-            <Button variant="outline" className="w-full h-12 border-border bg-bg-surface text-white hover:bg-white/5 flex items-center gap-3 rounded-xl group">
+            <Button variant="outline" className="w-full h-12 border-border bg-bg-surface text-white hover:bg-white/5 flex items-center gap-3 rounded-xl group px-4">
                <Filter className="w-4 h-4 text-accent-gold group-hover:rotate-12 transition-transform" />
                <span className="font-bold uppercase tracking-widest text-[11px]">Filtri Avanzati</span>
             </Button>
           }
         />
-        <SheetContent side="bottom" className="h-[90vh] bg-bg-surface border-t border-border rounded-t-3xl p-6 overflow-y-auto scrollbar-hide">
-          <SheetHeader className="pb-6">
+        <SheetContent side="bottom" className="h-[90vh] bg-bg-surface border-t border-border rounded-t-3xl p-0 overflow-hidden flex flex-col">
+          <SheetHeader className="p-6 border-b border-border shrink-0">
             <div className="flex items-center justify-between">
               <SheetTitle className="text-xl font-bold text-white uppercase tracking-widest">Filtra Ricerca</SheetTitle>
-              <button onClick={clearFilters} className="text-xs font-bold text-error/60 hover:text-error uppercase tracking-widest">Resetta</button>
+              <button 
+                onClick={() => {
+                  clearFilters();
+                  setOpen(false);
+                }} 
+                className="text-xs font-bold text-error/60 hover:text-error uppercase tracking-widest"
+              >
+                Resetta
+              </button>
             </div>
           </SheetHeader>
-          <Content />
+          <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
+            <Content onSuccess={() => setOpen(false)} />
+          </div>
         </SheetContent>
       </Sheet>
     );
