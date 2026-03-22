@@ -73,12 +73,22 @@ export async function deleteUser(userId: string) {
   const supabaseAdmin = await createAdminClient();
 
   try {
-    // 1. Delete from auth.users (this will cascade to profiles if configured, 
-    // but better be explicit or handle both as auth deletion is the primary)
+    // 1. Manually cleanup data that doesn't have ON DELETE CASCADE
+    // Delete reviews by this user
+    await supabaseAdmin.from('reviews').delete().eq('reviewer_id', userId);
+    
+    // Delete messages by this user
+    await supabaseAdmin.from('messages').delete().eq('sender_id', userId);
+
+    // Delete bookings where this user is the host
+    // (Bookings where they are the guest will cascade via guest_id)
+    await supabaseAdmin.from('bookings').delete().eq('host_id', userId);
+
+    // 2. Delete from auth.users (this will cascade to profiles and related properties)
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (authError) throw authError;
 
-    // 2. Ensuring profile is also gone (redundant but safe)
+    // 3. Ensuring profile is also gone (redundant but safe)
     await supabaseAdmin
       .from('profiles')
       .delete()
@@ -87,7 +97,8 @@ export async function deleteUser(userId: string) {
     revalidatePath('/admin/users');
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err.message };
+    console.error('Error in deleteUser:', err);
+    return { success: false, error: `Errore database: ${err.message || 'impossibile eliminare l\'utente per vincoli di integrità.'}` };
   }
 }
 
