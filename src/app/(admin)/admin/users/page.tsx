@@ -12,10 +12,31 @@ import { UserActions } from './UserActions';
 export default async function AdminUsersPage() {
   const supabase = await createClient();
   
-  const { data: users, error } = await supabase
+  // 1. Fetch profiles
+  const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false });
+
+  // 2. Fetch auth users to get emails (since email column is missing in profiles)
+  // We need the admin client for this
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
+  const { data: { users: authUsers } } = await supabaseAdmin.auth.admin.listUsers();
+
+  // Merge emails into profiles
+  const users = (profiles || []).map(profile => {
+    const authUser = authUsers.find(u => u.id === profile.id);
+    return {
+      ...profile,
+      email: authUser?.email || (profile as any).email // Fallback to profile.email if it exists in DB
+    };
+  });
 
   return (
     <div className="space-y-8">

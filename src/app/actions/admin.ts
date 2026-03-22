@@ -8,7 +8,7 @@ import PropertyStatusEmail from '@/components/emails/PropertyStatusEmail';
 /**
  * Helper to verify if the current user is an administrator
  */
-async function verifyAdmin(): Promise<{ isAdmin: true, supabase: any } | { isAdmin: false, error: string }> {
+async function verifyAdmin(): Promise<{ isAdmin: true, userId: string } | { isAdmin: false, error: string }> {
   const supabase = await createClient();
   const { data: { user: currentUser } } = await supabase.auth.getUser();
   
@@ -24,20 +24,37 @@ async function verifyAdmin(): Promise<{ isAdmin: true, supabase: any } | { isAdm
     return { isAdmin: false, error: 'Non autorizzato: accesso riservato agli amministratori.' };
   }
 
-  return { isAdmin: true, supabase };
+  return { isAdmin: true, userId: currentUser.id };
+}
+
+/**
+ * Creates a Supabase client with Service Role to bypass RLS for admin actions
+ */
+async function createAdminClient() {
+  const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || '', // Using service role key
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
 }
 
 // --- USER MANAGEMENT ---
 
 export async function toggleAdminRole(userId: string, currentRole: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabaseAdmin = await createAdminClient();
 
   const newRole = currentRole === 'admin' ? 'user' : 'admin';
 
   try {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('profiles')
       .update({ role: newRole })
       .eq('id', userId);
@@ -51,18 +68,21 @@ export async function toggleAdminRole(userId: string, currentRole: string) {
 }
 
 export async function deleteUser(userId: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabaseAdmin = await createAdminClient();
 
   try {
-    const { error, count } = await supabase
-      .from('profiles')
-      .delete({ count: 'exact' })
-      .eq('id', userId);
+    // 1. Delete from auth.users (this will cascade to profiles if configured, 
+    // but better be explicit or handle both as auth deletion is the primary)
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    if (authError) throw authError;
 
-    if (error) throw error;
-    if (count === 0) return { success: false, error: 'Nessun utente trovato.' };
+    // 2. Ensuring profile is also gone (redundant but safe)
+    await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
     
     revalidatePath('/admin/users');
     return { success: true };
@@ -74,9 +94,9 @@ export async function deleteUser(userId: string) {
 // --- PROPERTY MANAGEMENT ---
 
 export async function togglePropertyPublish(propertyId: string, currentStatus: boolean) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabase = await createClient();
 
   try {
     const { error } = await supabase
@@ -113,9 +133,9 @@ export async function togglePropertyPublish(propertyId: string, currentStatus: b
 }
 
 export async function togglePropertyFeatured(propertyId: string, currentFeatured: boolean) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabase = await createClient();
 
   try {
     const { error } = await supabase
@@ -134,12 +154,12 @@ export async function togglePropertyFeatured(propertyId: string, currentFeatured
 }
 
 export async function deleteProperty(propertyId: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabaseAdmin = await createAdminClient();
 
   try {
-    const { error, count } = await supabase
+    const { error, count } = await supabaseAdmin
       .from('properties')
       .delete({ count: 'exact' })
       .eq('id', propertyId);
@@ -157,9 +177,9 @@ export async function deleteProperty(propertyId: string) {
 // --- BOOKING MANAGEMENT ---
 
 export async function updateBookingStatus(bookingId: string, newStatus: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabase = await createClient();
 
   try {
     const { error } = await supabase
@@ -176,12 +196,12 @@ export async function updateBookingStatus(bookingId: string, newStatus: string) 
 }
 
 export async function deleteBooking(bookingId: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabaseAdmin = await createAdminClient();
 
   try {
-    const { error, count } = await supabase
+    const { error, count } = await supabaseAdmin
       .from('bookings')
       .delete({ count: 'exact' })
       .eq('id', bookingId);
@@ -206,9 +226,9 @@ export async function deleteBooking(bookingId: string) {
 // --- TICKET MANAGEMENT ---
 
 export async function updateTicketStatus(ticketId: string, newStatus: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabase = await createClient();
 
   try {
     const { error } = await supabase
@@ -229,12 +249,12 @@ export async function updateTicketStatus(ticketId: string, newStatus: string) {
  */
 
 export async function approveHost(userId: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabaseAdmin = await createAdminClient();
 
   try {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('profiles')
       .update({ host_status: 'approved' })
       .eq('id', userId);
@@ -242,7 +262,7 @@ export async function approveHost(userId: string) {
     if (error) throw error;
 
     // Send email to host
-    const { data: hostProfile } = await supabase.from('profiles').select('full_name, email').eq('id', userId).single();
+    const { data: hostProfile } = await supabaseAdmin.from('profiles').select('full_name, email').eq('id', userId).single();
     if (hostProfile?.email) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vacanzeitalia.it';
       await sendEmail({
@@ -265,12 +285,12 @@ export async function approveHost(userId: string) {
 }
 
 export async function rejectHost(userId: string) {
-  const result = await verifyAdmin();
-  if (!result.isAdmin) return { success: false, error: result.error };
-  const { supabase } = result;
+  const authCheck = await verifyAdmin();
+  if (!authCheck.isAdmin) return { success: false, error: authCheck.error };
+  const supabaseAdmin = await createAdminClient();
 
   try {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('profiles')
       .update({ host_status: 'none' })
       .eq('id', userId);
