@@ -12,6 +12,7 @@ import { HostRequestButton } from '@/components/dashboard/HostRequestButton';
 import { Home, Calendar, Heart, User, Plus, LayoutDashboard, Settings, Info, Trash2 } from 'lucide-react';
 import { ProfileForm } from '@/components/profile/ProfileForm';
 import { cn } from '@/lib/utils';
+import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
 
 export const metadata = { title: 'Dashboard | VacanzeItalia' };
 
@@ -79,6 +80,7 @@ export default async function GuestDashboardPage({
 
   return (
     <div className="min-h-screen bg-bg-primary pb-20">
+      <RealtimeBookingListener userId={user.id} />
       {/* Header Dashboard Minimal */}
       <div className="bg-bg-surface border-b border-border mb-8">
         <div className="container mx-auto px-4 py-10">

@@ -15,6 +15,7 @@ import { ReceiptVerificationActions } from '@/components/host/ReceiptVerificatio
 import { CompleteBookingAction } from '@/components/host/CompleteBookingAction';
 import { CancelBookingButton } from '@/components/booking/CancelBookingButton';
 import { ApproveCancellationAction } from '@/components/host/ApproveCancellationAction';
+import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
 
 export default async function BookingDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -40,6 +41,7 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <RealtimeBookingListener bookingId={booking.id} />
       {showConfetti && <Confetti />}
       
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
