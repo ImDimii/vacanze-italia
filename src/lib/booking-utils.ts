@@ -5,10 +5,11 @@ export interface PriceBreakdown {
   pricePerNight: number;
   subtotal: number;       // nights × pricePerNight
   cleaningFee: number;
-  totalPrice: number;     // subtotal + cleaningFee
+  totalPrice: number;     // subtotal + cleaningFee - discount
   depositAmount: number;  // totalPrice × 0.5 (bonifico)
   balanceAmount: number;  // totalPrice × 0.5 (contanti all'arrivo)
   securityDeposit: number; // caparra danni (contanti, restituita alla partenza)
+  discount: number;
 }
 
 export function calculateBookingPrice(
@@ -29,6 +30,7 @@ export function calculateBookingPrice(
       depositAmount: 0,
       balanceAmount: 0,
       securityDeposit,
+      discount: 0,
     };
   }
 
@@ -68,5 +70,6 @@ export function calculateBookingPrice(
     depositAmount,
     balanceAmount,
     securityDeposit,
+    discount: 0,
   };
 }

@@ -29,6 +29,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { validateCoupon } from '@/app/actions/coupon';
+import { Ticket } from 'lucide-react';
 
 interface BookingWidgetProps {
   property: any;
@@ -42,12 +44,16 @@ export function BookingWidget({ property, blockedDates, avgRating, totalReviews 
   const [guests, setGuests] = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
   const priceBreakdown = useMemo(() => {
     if (!date?.from || !date?.to) return null;
-    return calculateBookingPrice(
+    const baseBreakdown = calculateBookingPrice(
       property.price_per_night,
       property.cleaning_fee || 0,
       property.security_deposit || 0,
@@ -55,7 +61,38 @@ export function BookingWidget({ property, blockedDates, avgRating, totalReviews 
       date.to,
       property.seasonal_prices || []
     );
-  }, [date, property]);
+
+    if (appliedCoupon) {
+      let discount = 0;
+      if (appliedCoupon.discount_type === 'percentage') {
+        discount = (baseBreakdown.subtotal * appliedCoupon.discount_value) / 100;
+      } else {
+        discount = appliedCoupon.discount_value;
+      }
+      return {
+        ...baseBreakdown,
+        discount,
+        totalPrice: Math.max(0, baseBreakdown.totalPrice - discount),
+        deposit_amount: Math.max(0, (baseBreakdown.totalPrice - discount) * 0.5),
+        balance_amount: Math.max(0, (baseBreakdown.totalPrice - discount) * 0.5)
+      };
+    }
+
+    return baseBreakdown;
+  }, [date, property, appliedCoupon]);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    setCouponError('');
+    const res = await validateCoupon(couponCode.trim().toUpperCase());
+    if (res.success) {
+      setAppliedCoupon(res.coupon);
+    } else {
+      setCouponError(res.error || 'Errore');
+    }
+    setValidatingCoupon(false);
+  };
 
   const isMinNightsMet = useMemo(() => {
     if (!date?.from || !date?.to) return true;
@@ -85,7 +122,8 @@ export function BookingWidget({ property, blockedDates, avgRating, totalReviews 
           property_id: property.id,
           check_in: date.from.toISOString(),
           check_out: date.to.toISOString(),
-          num_guests: guests
+          num_guests: guests,
+          coupon_code: appliedCoupon?.code
         })
       });
 
@@ -197,6 +235,32 @@ export function BookingWidget({ property, blockedDates, avgRating, totalReviews 
                 </button>
              </div>
           </div>
+
+          {/* Coupon Input */}
+          <div className="space-y-2">
+            <div className="relative">
+              <input 
+                type="text"
+                placeholder="CODICE SCONTO"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                className="w-full h-16 px-6 bg-bg-primary border border-border rounded-xl text-xs font-bold uppercase tracking-widest text-white/90 focus:outline-none focus:ring-1 focus:ring-accent-gold/50"
+              />
+              <button 
+                onClick={handleApplyCoupon}
+                disabled={validatingCoupon || !couponCode || !!appliedCoupon}
+                className="absolute right-2 top-2 bottom-2 px-4 bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all disabled:opacity-50"
+              >
+                {validatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : appliedCoupon ? 'Applicato' : 'Applica'}
+              </button>
+            </div>
+            {couponError && <p className="text-[9px] text-error font-bold uppercase ml-2">{couponError}</p>}
+            {appliedCoupon && (
+              <p className="text-[9px] text-success font-bold uppercase ml-2 flex items-center gap-1">
+                <Ticket className="w-3 h-3" /> Sconto {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : `€${appliedCoupon.discount_value}`} applicato!
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Price Summary Breakdown */}
@@ -217,6 +281,12 @@ export function BookingWidget({ property, blockedDates, avgRating, totalReviews 
                 <div className="flex justify-between border-b border-border/20 pb-2">
                   <span>Spese di pulizia</span>
                   <span className="text-white font-bold">€{priceBreakdown.cleaningFee}</span>
+                </div>
+              )}
+              {priceBreakdown.discount > 0 && (
+                <div className="flex justify-between border-b border-border/20 pb-2 text-success">
+                  <span className="font-bold uppercase tracking-widest text-[9px]">Sconto coupon</span>
+                  <span className="font-bold">- €{priceBreakdown.discount.toFixed(2)}</span>
                 </div>
               )}
               <div className="pt-4 flex items-baseline justify-between">

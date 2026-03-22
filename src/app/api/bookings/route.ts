@@ -9,7 +9,8 @@ const bookingSchema = z.object({
   property_id: z.string().uuid(),
   check_in: z.string(),
   check_out: z.string(),
-  num_guests: z.number().min(1)
+  num_guests: z.number().min(1),
+  coupon_code: z.string().optional()
 });
 
 export async function POST(req: Request) {
@@ -69,12 +70,51 @@ export async function POST(req: Request) {
     const checkOutDate = new Date(check_out);
     const prices = calculateBookingPrice(
       property.price_per_night,
-      property.cleaning_fee,
-      property.security_deposit,
+      property.cleaning_fee || 0,
+      property.security_deposit || 0,
       checkInDate,
       checkOutDate,
       property.seasonal_prices || []
     );
+
+    // 3.1. Apply coupon if provided
+    let finalTotalPrice = prices.totalPrice;
+    let discountAmount = 0;
+    let couponId = null;
+
+    if (result.data.coupon_code) {
+      const { data: coupon } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', result.data.coupon_code.toUpperCase())
+        .eq('active', true)
+        .single();
+      
+      if (coupon) {
+        // Validation (basic)
+        const isExpired = coupon.expires_at && new Date(coupon.expires_at) < new Date();
+        const limitReached = coupon.usage_limit && coupon.used_count >= coupon.usage_limit;
+
+        if (!isExpired && !limitReached) {
+          couponId = coupon.id;
+          if (coupon.discount_type === 'percentage') {
+            discountAmount = (prices.subtotal * coupon.discount_value) / 100;
+          } else {
+            discountAmount = coupon.discount_value;
+          }
+          finalTotalPrice = Math.max(0, prices.totalPrice - discountAmount);
+          
+          // Increment used_count
+          await supabase
+            .from('coupons')
+            .update({ used_count: coupon.used_count + 1 })
+            .eq('id', coupon.id);
+        }
+      }
+    }
+
+    const finalDeposit = Math.round(finalTotalPrice * 0.5 * 100) / 100;
+    const finalBalance = finalTotalPrice - finalDeposit;
 
     // 4. Create booking
     const { data: booking, error: bookingError } = await supabase
@@ -91,9 +131,11 @@ export async function POST(req: Request) {
         cleaning_fee: property.cleaning_fee,
         security_deposit: property.security_deposit,
         subtotal: prices.subtotal,
-        total_price: prices.totalPrice,
-        deposit_amount: prices.depositAmount,
-        balance_amount: prices.balanceAmount,
+        total_price: finalTotalPrice,
+        deposit_amount: finalDeposit,
+        balance_amount: finalBalance,
+        discount_amount: discountAmount,
+        coupon_id: couponId,
         status: 'pending_payment'
       })
       .select()
@@ -117,7 +159,7 @@ export async function POST(req: Request) {
         propertyName: property.title,
         checkIn: checkInDate.toLocaleDateString('it-IT'),
         checkOut: checkOutDate.toLocaleDateString('it-IT'),
-        totalPrice: `€${prices.totalPrice.toFixed(2)}`,
+        totalPrice: `€${finalTotalPrice.toFixed(2)}`,
         isToHost: false,
         bookingUrl: `${baseUrl}/dashboard/bookings/${booking.id}`
       })
@@ -134,7 +176,7 @@ export async function POST(req: Request) {
           propertyName: property.title,
           checkIn: checkInDate.toLocaleDateString('it-IT'),
           checkOut: checkOutDate.toLocaleDateString('it-IT'),
-          totalPrice: `€${prices.totalPrice.toFixed(2)}`,
+          totalPrice: `€${finalTotalPrice.toFixed(2)}`,
           isToHost: true,
           bookingUrl: `${baseUrl}/dashboard/host/bookings/${booking.id}`
         })

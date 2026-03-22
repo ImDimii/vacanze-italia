@@ -18,6 +18,7 @@ import { ApproveCancellationAction } from '@/components/host/ApproveCancellation
 import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
 import { BookingChat } from '@/components/booking/BookingChat';
 import { getMessages } from '@/app/actions/message';
+import { DownloadVoucherButton } from '@/components/booking/DownloadVoucherButton';
 
 export default async function BookingDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -389,11 +390,24 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
                   <span className="text-accent-gold flex items-center gap-1">💳 Caparra versata/da versare</span>
                   <span className="font-semibold text-white">€{booking.deposit_amount.toFixed(2)}</span>
                 </div>
+                {booking.discount_amount > 0 && (
+                  <div className="flex justify-between text-xs text-success border-t border-border/10 pt-1 mt-1">
+                    <span className="font-bold flex items-center gap-1">🎟️ Sconto Applicato</span>
+                    <span className="font-bold">- €{booking.discount_amount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-success flex items-center gap-1">💵 Saldo (all'arrivo)</span>
                   <span className="font-semibold text-white">€{booking.balance_amount.toFixed(2)}</span>
                 </div>
               </div>
+              
+              {/* Voucher Download Button */}
+              {['confirmed', 'completed'].includes(booking.status) && (
+                <div className="mt-4">
+                   <DownloadVoucherButton booking={booking} />
+                </div>
+              )}
               
               {booking.status === 'confirmed' && booking.host_id === user.id && (
                 <CompleteBookingAction bookingId={booking.id} />
