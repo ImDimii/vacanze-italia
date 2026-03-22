@@ -101,8 +101,8 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <Card className="bg-bg-surface border-border shadow-2xl">
-            <CardHeader className="bg-bg-primary border-b border-border p-6">
+          <Card className="bg-bg-surface border-border shadow-2xl p-0 gap-0 overflow-hidden">
+            <CardHeader className="bg-bg-surface border-b border-border p-8">
               <CardTitle className="text-white text-xl flex items-center gap-2">
                 <Send className="w-5 h-5 text-accent-gold" /> Invia un Messaggio
               </CardTitle>
