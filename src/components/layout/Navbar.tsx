@@ -55,6 +55,11 @@ export function Navbar({ siteName = "VacanzeItalia" }: NavbarProps) {
               </div>
             )}
           </div>
+          {!loading && user && (
+            <div className="md:hidden">
+              <NotificationBell userId={user.id} />
+            </div>
+          )}
           <MobileNav user={user} profile={profile} loading={loading} signOut={signOut} />
         </div>
       </div>

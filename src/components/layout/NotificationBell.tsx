@@ -118,7 +118,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 mt-4 w-[380px] bg-bg-surface/95 backdrop-blur-2xl border border-border shadow-2xl rounded-2xl overflow-hidden z-[100]"
+            className="fixed inset-x-4 top-[80px] md:absolute md:inset-auto md:right-0 md:top-full md:mt-4 md:w-[380px] bg-bg-surface/95 backdrop-blur-2xl border border-border shadow-2xl rounded-2xl overflow-hidden z-[100]"
           >
             {/* Header */}
             <div className="p-4 border-b border-border flex items-center justify-between bg-white/[0.02]">
