@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { createCoupon } from '@/app/actions/coupon';
 import { Loader2, Ticket, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function CouponForm({ onCancel }: { onCancel: () => void }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     code: '',
@@ -16,19 +18,45 @@ export function CouponForm({ onCancel }: { onCancel: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const res = await createCoupon({
-      ...formData,
-      discount_value: parseFloat(formData.discount_value),
-      usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null,
-      code: formData.code.toUpperCase().trim()
-    });
-    if (res.success) {
-      onCancel();
-    } else {
-      alert(res.error || 'Errore nella creazione del coupon');
+    console.log('Form submission started', formData);
+    
+    // Basic validation
+    const val = parseFloat(formData.discount_value);
+    if (isNaN(val) || val <= 0) {
+      alert('Inserisci un valore di sconto valido superiore a 0');
+      return;
     }
-    setLoading(false);
+
+    setLoading(true);
+    try {
+      const res = await createCoupon({
+        discount_type: formData.discount_type,
+        discount_value: val,
+        usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null,
+        code: formData.code.toUpperCase().trim()
+      });
+      
+      console.log('Server response:', res);
+      
+      if (res.success) {
+        setFormData({
+          code: '',
+          discount_type: 'percentage',
+          discount_value: '',
+          usage_limit: '',
+        });
+        router.refresh(); 
+        alert('Coupon creato con successo!');
+        if (onCancel) onCancel();
+      } else {
+        alert(res.error || 'Errore nella creazione del coupon');
+      }
+    } catch (err: any) {
+      console.error('Submission error:', err);
+      alert('Errore imprevisto: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,10 +120,11 @@ export function CouponForm({ onCancel }: { onCancel: () => void }) {
       </div>
 
       <Button 
+        type="submit"
         disabled={loading}
         className="w-full h-12 bg-accent-gold text-black font-bold uppercase tracking-widest text-[10px] rounded-xl hover:bg-white transition-all shadow-lg shadow-accent-gold/10"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Crea Coupon'}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : 'Crea Coupon'}
       </Button>
     </form>
   );
