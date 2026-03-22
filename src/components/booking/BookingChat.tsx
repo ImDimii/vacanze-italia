@@ -92,10 +92,27 @@ export function BookingChat({ bookingId, currentUserId, initialMessages }: Booki
     setNewMessage('');
     setLoading(true);
 
+    // Optimistic Update
+    const optimisticMsg: Message = {
+      id: Math.random().toString(36).substring(7), // Temporary ID
+      booking_id: bookingId,
+      sender_id: currentUserId,
+      content,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    };
+    
+    setMessages(prev => [...prev, optimisticMsg]);
+
     const result = await sendMessage(bookingId, content);
     if (!result.success) {
       alert('Errore nell\'invio del messaggio');
       setNewMessage(content);
+      // Remove optimistic message on failure
+      setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
+    } else {
+       // After success, we can wait for Realtime to provide the "real" message with correct ID
+       // Or just leave it and let the Realtime check handle duplicates
     }
     setLoading(false);
   };
