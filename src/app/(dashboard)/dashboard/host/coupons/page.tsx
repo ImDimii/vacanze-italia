@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import { Ticket, Plus, Tag, Users, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { CouponForm } from '@/components/host/CouponForm';
+import { Ticket, Tag, Users } from 'lucide-react';
 import { DeleteCouponButton } from '@/components/host/DeleteCouponButton';
-import Link from 'next/link';
+import { HostCouponSidebar } from '@/components/host/HostCouponSidebar';
 
 export default async function HostCouponsPage() {
   const supabase = await createClient();
@@ -26,36 +24,34 @@ export default async function HostCouponsPage() {
           </div>
           <p className="text-text-secondary text-sm font-medium">Gestisci i codici sconto per i tuoi alloggi</p>
         </div>
-        
-        {/* We use a search param or local state toggle if client, but here it's easier to just have a button that links to same page with ?new=true or handle via client component wrapper */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Coupons List */}
         <div className="lg:col-span-2 space-y-4">
           {!coupons || coupons.length === 0 ? (
-            <div className="p-12 border border-dashed border-border rounded-3xl text-center bg-bg-surface/50">
+            <div className="p-12 border border-dashed border-border rounded-3xl text-center bg-bg-surface/50 shadow-inner">
                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Tag className="w-6 h-6 text-text-secondary" />
                </div>
                <h3 className="text-white font-bold mb-2">Nessun Coupon Attivo</h3>
-               <p className="text-text-secondary text-sm mb-6 max-w-xs mx-auto">Inizia creando un codice sconto per incentivare le prenotazioni sui tuoi alloggi.</p>
+               <p className="text-text-secondary text-sm mb-6 max-w-xs mx-auto leading-relaxed">Inizia creando un codice sconto per incentivare le prenotazioni sui tuoi alloggi.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
                {coupons.map((coupon) => (
                   <div key={coupon.id} className="group relative bg-bg-surface border border-border p-6 rounded-2xl flex items-center justify-between hover:border-accent-gold/30 transition-all shadow-lg hover:shadow-accent-gold/5">
                      <div className="flex items-center gap-6">
-                        <div className="w-12 h-12 bg-accent-gold/10 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-accent-gold/10 rounded-xl flex items-center justify-center border border-accent-gold/20">
                            <Ticket className="w-6 h-6 text-accent-gold" />
                         </div>
                         <div className="space-y-1">
                            <h4 className="text-lg font-bold text-white tracking-widest">{coupon.code}</h4>
                            <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-                              <span className="text-success">
+                              <span className="text-success bg-success/5 px-2 py-0.5 rounded border border-success/10">
                                 {coupon.discount_type === 'percentage' ? `${coupon.discount_value}%` : `€${coupon.discount_value}`} SCONTO
                               </span>
-                              <span className="flex items-center gap-1">
+                              <span className="flex items-center gap-1 opacity-70">
                                  <Users className="w-3 h-3" /> {coupon.used_count} / {coupon.usage_limit || '∞'} UTILIZZI
                               </span>
                            </div>
@@ -68,39 +64,9 @@ export default async function HostCouponsPage() {
           )}
         </div>
 
-        {/* Sidebar Creation (Dummy/Wrapper approach) */}
-        <div className="space-y-6">
-          <div className="bg-bg-surface border border-border p-6 rounded-2xl space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-white">Guida Coupon</h3>
-            <ul className="space-y-3">
-              <li className="flex gap-3 text-xs text-text-secondary">
-                <div className="w-1 h-1 bg-accent-gold rounded-full mt-1.5 shrink-0" />
-                <span>I coupon creati qui valgono per <strong>tutti</strong> i tuoi annunci.</span>
-              </li>
-              <li className="flex gap-3 text-xs text-text-secondary">
-                <div className="w-1 h-1 bg-accent-gold rounded-full mt-1.5 shrink-0" />
-                <span>Puoi creare sconti in percentuale (es. 10%) o fissi (es. 20€).</span>
-              </li>
-              <li className="flex gap-3 text-xs text-text-secondary">
-                <div className="w-1 h-1 bg-accent-gold rounded-full mt-1.5 shrink-0" />
-                <span>Imposta un limite di utilizzi per proteggere il tuo guadagno.</span>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Form directly visible here or as Client Wrapper */}
-          <CouponFormWrapper />
-        </div>
+        {/* Sidebar Creation (Client Component) */}
+        <HostCouponSidebar />
       </div>
-    </div>
-  );
-}
-
-// Small client wrapper to handle the "Show Form" toggle if needed, or just show it
-function CouponFormWrapper() {
-  return (
-    <div className="space-y-4">
-       <CouponForm onCancel={() => {}} />
     </div>
   );
 }
