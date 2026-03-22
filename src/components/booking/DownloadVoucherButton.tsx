@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Download, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
@@ -43,7 +43,7 @@ export function DownloadVoucherButton({ booking }: DownloadVoucherButtonProps) {
       body: [
         ['Proprietà', booking.property.title],
         ['Indirizzo', `${booking.property.location_address}, ${booking.property.location_city}`],
-        ['Host', booking.property.host.full_name || 'Host Vacanze Italia'],
+        ['Host', booking.property.host?.full_name || 'Host Vacanze Italia'],
       ],
       theme: 'striped',
       headStyles: { fillColor: [196, 161, 107], textColor: 255 }, // Accent Gold

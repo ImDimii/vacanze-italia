@@ -18,7 +18,7 @@ import { ApproveCancellationAction } from '@/components/host/ApproveCancellation
 import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
 import { BookingChat } from '@/components/booking/BookingChat';
 import { getMessages } from '@/app/actions/message';
-import { DownloadVoucherButton } from '@/components/booking/DownloadVoucherButton';
+import { DownloadVoucherButton } from '@/components/booking/VoucherClient';
 
 export default async function BookingDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
