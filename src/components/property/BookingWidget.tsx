@@ -85,7 +85,7 @@ export function BookingWidget({ property, blockedDates, avgRating, totalReviews 
     if (!couponCode.trim()) return;
     setValidatingCoupon(true);
     setCouponError('');
-    const res = await validateCoupon(couponCode.trim().toUpperCase());
+    const res = await validateCoupon(couponCode.trim().toUpperCase(), property.id);
     if (res.success) {
       setAppliedCoupon(res.coupon);
     } else {

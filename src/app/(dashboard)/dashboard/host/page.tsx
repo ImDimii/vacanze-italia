@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import Link from 'next/link';
-import { Building2, Users, ReceiptEuro, Plus, PiggyBank, CalendarClock, Wallet } from 'lucide-react';
+import { Building2, Users, ReceiptEuro, Plus, PiggyBank, CalendarClock, Wallet, Ticket } from 'lucide-react';
 import { startOfDay } from 'date-fns';
 import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
 
@@ -83,12 +83,20 @@ export default async function HostDashboardPage() {
           <h1 className="font-heading text-3xl font-bold text-white">Dashboard Host</h1>
           <p className="text-text-secondary">Gestisci le tue proprietà e le prenotazioni ricevute.</p>
         </div>
-        <Link href="/dashboard/host/new">
-          <Button className="bg-accent-gold text-black hover:bg-[#d4b568]">
-            <Plus className="w-4 h-4 mr-2" />
-            Nuova Proprietà
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <Link href="/dashboard/host/coupons" className="flex-1 md:flex-none">
+            <Button variant="outline" className="w-full border-accent-gold/50 text-accent-gold hover:bg-accent-gold/10">
+              <Ticket className="w-4 h-4 mr-2" />
+              I Miei Coupon
+            </Button>
+          </Link>
+          <Link href="/dashboard/host/new" className="flex-1 md:flex-none">
+            <Button className="w-full bg-accent-gold text-black hover:bg-[#d4b568]">
+              <Plus className="w-4 h-4 mr-2" />
+              Nuova Proprietà
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-12">
