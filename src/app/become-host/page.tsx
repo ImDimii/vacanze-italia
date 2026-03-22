@@ -112,7 +112,7 @@ export default function BecomeHostPage() {
             <div className="w-20 h-1 bg-accent-gold mx-auto rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 icon: Coins,
@@ -136,7 +136,7 @@ export default function BecomeHostPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="p-8 rounded-3xl bg-bg-surface border border-white/5 hover:border-accent-gold/30 transition-all group"
+                className="p-6 sm:p-8 rounded-3xl bg-bg-surface border border-white/5 hover:border-accent-gold/30 transition-all group"
               >
                 <div className="w-14 h-14 rounded-2xl bg-accent-gold/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <benefit.icon className="w-7 h-7 text-accent-gold" />
@@ -150,29 +150,31 @@ export default function BecomeHostPage() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="lg:w-1/2">
-              <h2 className="text-4xl md:text-5xl font-bold mb-8 font-heading">Inizia a guadagnare in <span className="text-accent-gold">3 semplici passi</span></h2>
-              <div className="space-y-8">
+      <section className="py-20 md:py-24">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            <div className="w-full lg:w-1/2 mb-12 lg:mb-0">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-10 font-heading leading-tight">
+                Inizia a guadagnare in <span className="text-accent-gold">3 semplici passi</span>
+              </h2>
+              <div className="space-y-10">
                 {[
                   { step: "01", title: "Richiedi lo Status", text: "Invia la tua richiesta cliccando sul bottone in questa pagina. Verremo notificati subito." },
                   { step: "02", title: "Pubblica l'Annuncio", text: "Carica foto, descrizioni e imposta i prezzi per la tua struttura." },
                   { step: "03", title: "Accogli i tuoi Ospiti", text: "Ricevi notifiche per le nuove prenotazioni e inizia a ospitare viaggiatori." }
                 ].map((item, i) => (
-                  <div key={i} className="flex gap-6 items-start">
-                    <span className="text-4xl font-heading font-black text-white/10">{item.step}</span>
-                    <div>
-                      <h4 className="text-xl font-bold mb-2">{item.title}</h4>
-                      <p className="text-text-secondary leading-relaxed">{item.text}</p>
+                  <div key={i} className="flex gap-5 items-start">
+                    <span className="text-3xl sm:text-4xl font-heading font-black text-white/5 leading-none">{item.step}</span>
+                    <div className="flex-1">
+                      <h4 className="text-xl font-bold mb-2 text-white">{item.title}</h4>
+                      <p className="text-text-secondary leading-relaxed text-sm sm:text-base">{item.text}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="lg:w-1/2 relative">
-               <div className="aspect-square rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-accent-gold/5 group">
+            <div className="w-full lg:w-1/2 relative">
+               <div className="aspect-[4/5] sm:aspect-square rounded-[32px] overflow-hidden border border-white/10 shadow-2xl shadow-accent-gold/5 group">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.8 }}
@@ -187,10 +189,10 @@ export default function BecomeHostPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-transparent to-transparent opacity-60" />
                   </motion.div>
                   
-                  {/* Floating badge for extra premium feel */}
-                  <div className="absolute bottom-8 left-8 right-8 p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 z-20">
-                    <p className="text-white font-bold text-lg mb-1">Qualità Garantita</p>
-                    <p className="text-text-secondary text-xs leading-relaxed uppercase tracking-widest font-bold">Standard di Eccellenza {siteName}</p>
+                  {/* Floating badge for extra premium feel - Hidden on tiny screens, adjusted for mobile */}
+                  <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 p-4 sm:p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 z-20">
+                    <p className="text-white font-bold text-base sm:text-lg mb-1">Qualità Garantita</p>
+                    <p className="text-text-secondary text-[10px] sm:text-xs leading-relaxed uppercase tracking-widest font-bold">Standard di Eccellenza {siteName}</p>
                   </div>
                </div>
             </div>
