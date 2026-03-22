@@ -5,14 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { MobileNav } from './MobileNav';
 import { UserCircle } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator
-} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DesktopDrawer } from './DesktopDrawer';
 
 interface NavbarProps {
   siteName?: string;
@@ -54,42 +48,7 @@ export function Navbar({ siteName = "VacanzeItalia" }: NavbarProps) {
             )}
 
             {!loading && user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="relative h-8 w-8 rounded-full outline-none focus:ring-2 focus:ring-accent-gold overflow-hidden">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt="Avatar" />
-                    <AvatarFallback className="bg-bg-surface text-white">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end">
-                  {profile?.role === 'admin' && (
-                    <>
-                      <DropdownMenuItem>
-                        <Link href="/admin" className="w-full cursor-pointer font-bold text-accent-gold">Pannello Admin</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem>
-                    <Link href="/dashboard" className="w-full cursor-pointer">Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link href="/dashboard?view=profile" className="w-full cursor-pointer">Il mio Profilo</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      signOut();
-                    }} 
-                    className="cursor-pointer text-error focus:text-error font-medium"
-                  >
-                    Esci
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <DesktopDrawer user={user} profile={profile} signOut={signOut} />
             )}
           </div>
           <MobileNav user={user} profile={profile} loading={loading} signOut={signOut} />

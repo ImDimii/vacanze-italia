@@ -69,6 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       await supabase.auth.signOut();
       
+      // Also call server logout to clear cookies definitively
+      await fetch('/api/logout', { method: 'POST' });
+      
       // Clear all state immediately
       setUser(null);
       setProfile(null);
