@@ -7,6 +7,7 @@ import { MobileNav } from './MobileNav';
 import { UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DesktopDrawer } from './DesktopDrawer';
+import { NotificationBell } from './NotificationBell';
 
 interface NavbarProps {
   siteName?: string;
@@ -48,7 +49,10 @@ export function Navbar({ siteName = "VacanzeItalia" }: NavbarProps) {
             )}
 
             {!loading && user && (
-              <DesktopDrawer user={user} profile={profile} signOut={signOut} />
+              <div className="flex items-center gap-3">
+                <NotificationBell userId={user.id} />
+                <DesktopDrawer user={user} profile={profile} signOut={signOut} />
+              </div>
             )}
           </div>
           <MobileNav user={user} profile={profile} loading={loading} signOut={signOut} />

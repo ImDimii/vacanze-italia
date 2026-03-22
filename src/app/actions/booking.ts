@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { sendEmail } from '@/lib/email';
 import BookingStatusEmail from '@/components/emails/BookingStatusEmail';
+import { createInternalNotification } from './notification';
 
 export async function cancelBooking(bookingId: string, refundInfo?: string) {
   const supabase = await createClient();
@@ -73,6 +74,26 @@ export async function cancelBooking(bookingId: string, refundInfo?: string) {
     }
   }
 
+  // Create Notification
+  try {
+    const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
+    const recipientId = isGuest ? booking.host_id : booking.guest_id;
+    const notifyTitle = newStatus === 'cancelled' ? 'Prenotazione Annullata' : 'Richiesta Annullamento';
+    const notifyContent = newStatus === 'cancelled' 
+      ? `${isGuest ? "L'ospite" : "L'host"} ha annullato la prenotazione per ${property?.title || 'la struttura'}.`
+      : `L'ospite ha richiesto di annullare la prenotazione per ${property?.title || 'la struttura'}.`;
+
+    await createInternalNotification(
+      recipientId,
+      'booking_update',
+      notifyTitle,
+      notifyContent,
+      `/dashboard/bookings/${bookingId}`
+    );
+  } catch (notifyError) {
+    console.error('Notification error:', notifyError);
+  }
+
   revalidatePath('/dashboard');
   revalidatePath(`/dashboard/bookings/${bookingId}`);
 
@@ -126,6 +147,20 @@ export async function approveCancellation(bookingId: string) {
         bookingUrl: `${baseUrl}/dashboard/bookings/${bookingId}`
       })
     });
+  }
+
+  // Create Notification for guest
+  try {
+    const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
+    await createInternalNotification(
+      booking.guest_id,
+      'booking_update',
+      'Richiesta Annullamento Approvata',
+      `La tua richiesta di annullamento per ${property?.title || 'la struttura'} è stata accettata dall'host.`,
+      `/dashboard/bookings/${bookingId}`
+    );
+  } catch (notifyError) {
+    console.error('Notification error:', notifyError);
   }
 
   revalidatePath('/dashboard');

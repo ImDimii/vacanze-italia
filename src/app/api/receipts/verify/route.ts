@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendEmail } from '@/lib/email';
 import BookingStatusEmail from '@/components/emails/BookingStatusEmail';
+import { createInternalNotification } from '@/app/actions/notification';
 
 export async function POST(req: Request) {
   try {
@@ -86,6 +87,27 @@ export async function POST(req: Request) {
           })
         });
       }
+    }
+
+    // Create Notification for the guest
+    try {
+      const notifyTitle = status === 'confirmed' ? 'Prenotazione Confermata!' : 
+                          status === 'rejected' ? 'Problema con il pagamento' :
+                          status === 'completed' ? 'Soggiorno completato' : 'Aggiornamento prenotazione';
+      
+      const notifyContent = status === 'confirmed' ? `La tua prenotazione per ${property?.title || 'la struttura'} è stata confermata. Ci vediamo presto!` :
+                            status === 'rejected' ? `La ricevuta per ${property?.title || 'la struttura'} è stata rifiutata: ${reason || 'contatta l\'host per dettagli'}.` :
+                            status === 'completed' ? `Speriamo che il tuo soggiorno a ${property?.title || 'la struttura'} sia stato fantastico!` : 'Stato aggiornato.';
+
+      await createInternalNotification(
+        booking.guest_id,
+        'booking_update',
+        notifyTitle,
+        notifyContent,
+        `/dashboard/bookings/${booking.id}`
+      );
+    } catch (err) {
+      console.error('Notification error:', err);
     }
 
     return NextResponse.json({ success: true, new_status: status });
