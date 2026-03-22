@@ -2,8 +2,7 @@
 
 Vacanze Italia è una piattaforma di prenotazione alloggi di lusso focalizzata sul mercato italiano. Progettata per offrire un'esperienza utente premium simile ad Airbnb, ma con un tocco tipicamente italiano e un sistema di gestione pagamenti sicuro tramite bonifico bancario.
 
-![Vacanze Italia](https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200)
-
+![Vacanze Italia]
 ## 🚀 Caratteristiche Principali
 
 ### 🏨 Per gli Ospiti

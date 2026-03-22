@@ -16,6 +16,8 @@ import { CompleteBookingAction } from '@/components/host/CompleteBookingAction';
 import { CancelBookingButton } from '@/components/booking/CancelBookingButton';
 import { ApproveCancellationAction } from '@/components/host/ApproveCancellationAction';
 import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
+import { BookingChat } from '@/components/booking/BookingChat';
+import { getMessages } from '@/app/actions/message';
 
 export default async function BookingDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -39,6 +41,8 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
   const isPending = booking.status === 'pending_payment';
   const showConfetti = isPending;
 
+  const initialMessages = await getMessages(booking.id);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <RealtimeBookingListener bookingId={booking.id} />
@@ -58,6 +62,15 @@ export default async function BookingDetailPage(props: { params: Promise<{ id: s
         <div className="lg:col-span-2 space-y-8">
           
           <BookingTimeline status={booking.status} />
+          
+          {/* Real-time Chat Section */}
+          <div className="mt-8">
+            <BookingChat 
+              bookingId={booking.id} 
+              currentUserId={user.id} 
+              initialMessages={initialMessages} 
+            />
+          </div>
           
           {isPending && (
             <>
