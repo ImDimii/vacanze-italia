@@ -6,6 +6,7 @@ import { BookingStatusBadge } from '@/components/booking/BookingStatusBadge';
 import Link from 'next/link';
 import { Building2, Users, ReceiptEuro, Plus, PiggyBank, CalendarClock, Wallet } from 'lucide-react';
 import { startOfDay } from 'date-fns';
+import { RealtimeBookingListener } from '@/components/booking/RealtimeBookingListener';
 
 export const metadata = { title: 'Dashboard Host | VacanzeItalia' };
 
@@ -35,15 +36,14 @@ export default async function HostDashboardPage() {
 
   // Fetch bookings for these properties using property_id link
   // (More robust than filtering by denormalized host_id)
-  let safeBookings: any[] = [];
-  if (propertyIds.length > 0) {
-     const { data: bookings } = await supabase
-      .from('bookings')
-      .select('*, property:properties(title, host_id), guest:profiles!bookings_guest_id_fkey(full_name, email)')
-      .in('property_id', propertyIds)
-      .order('created_at', { ascending: false });
-     if (bookings) safeBookings = bookings;
-  }
+  // Fetch bookings directly by host_id (more robust and covers all properties)
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('*, property:properties(id, title, host_id), guest:profiles!bookings_guest_id_fkey(full_name, email)')
+    .eq('host_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const safeBookings = bookings || [];
 
   const pendingReceipts = safeBookings.filter(b => b.status === 'receipt_uploaded');
   
@@ -77,6 +77,7 @@ export default async function HostDashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <RealtimeBookingListener userId={user.id} />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="font-heading text-3xl font-bold text-white">Dashboard Host</h1>

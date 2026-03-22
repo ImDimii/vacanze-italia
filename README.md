@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🇮🇹 Vacanze Italia - Premium Vacation Rental Platform
 
-## Getting Started
+Vacanze Italia è una piattaforma di prenotazione alloggi di lusso focalizzata sul mercato italiano. Progettata per offrire un'esperienza utente premium simile ad Airbnb, ma con un tocco tipicamente italiano e un sistema di gestione pagamenti sicuro tramite bonifico bancario.
 
-First, run the development server:
+![Vacanze Italia](https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200)
 
+## 🚀 Caratteristiche Principali
+
+### 🏨 Per gli Ospiti
+- **Ricerca Intuitiva**: Filtra gli alloggi per categoria e località.
+- **Mappa Interattiva**: Visualizza la posizione esatta degli alloggi tramite integrazione Mapbox.
+- **Sistema di Prenotazione Real-time**: Ricevi aggiornamenti istantanei sullo stato della tua prenotazione (richiesta, pagamento in verifica, confermata).
+- **Gestione Ricevute**: Carica la ricevuta del bonifico direttamente nella piattaforma per una validazione veloce.
+- **Dashboard Personale**: Visualizza i tuoi viaggi passati e futuri con dettagli su indirizzi e contatti host.
+
+### 🏠 Per gli Host
+- **Host Dashboard Completa**: Monitora guadagni netti, commissioni e statistiche di occupazione.
+- **Gestione Prenotazioni**: Approva o rifiuta richieste, verifica le ricevute di pagamento caricate dagli ospiti.
+- **Pubblicazione Alloggi**: Processo guidato per caricare foto, descrizioni, servizi e prezzi stagionali.
+- **Calendario Disponibilità**: Blocca date manualmente o gestisci le prenotazioni in arrivo.
+
+### 🛡️ Pannello Amministratore
+- **Gestione Utenti**: Gestione ruoli (Admin/Ospite/Host) e possibilità di eliminare account in modo sicuro.
+- **Approvazione Host**: Sistema di verifica per i nuovi utenti che desiderano diventare host.
+- **Impostazioni Sito**: Configurazione globale delle commissioni della piattaforma.
+
+## 🛠️ Tech Stack
+
+- **Frontend**: [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [Tailwind CSS 4](https://tailwindcss.com/)
+- **Backend/Database**: [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage, Realtime)
+- **Email**: [Resend](https://resend.com/) con [React Email](https://react.email/)
+- **Mappe**: [Mapbox GL JS](https://www.mapbox.com/)
+- **Animazioni**: [Framer Motion](https://www.framer.com/motion/)
+- **Icone**: [Lucide React](https://lucide.dev/)
+
+## 📦 Installazione
+
+1. **Clona il repository**:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Imdimii/vacanze-italia.git
+cd vacanze-italia
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Installa le dipendenze**:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Configura le variabili d'ambiente**:
+Crea un file `.env.local` con:
+```env
+NEXT_PUBLIC_SUPABASE_URL=tuo_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tua_anon_key
+SUPABASE_SERVICE_ROLE_KEY=tua_service_role_key
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=tuo_token_mapbox
+RESEND_API_KEY=tua_key_resend
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Avvia il server di sviluppo**:
+```bash
+npm run dev
+```
 
-## Learn More
+## 🌐 Distribuzione
 
-To learn more about Next.js, take a look at the following resources:
+Il progetto è ottimizzato per essere distribuito su **Vercel**. Assicurati di configurare le stesse variabili d'ambiente nel pannello di controllo di Vercel.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Sviluppato con ❤️ per il turismo italiano.
