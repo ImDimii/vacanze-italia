@@ -47,14 +47,14 @@ export default function BecomeHostPage() {
   return (
     <div className="min-h-screen bg-bg-primary text-white">
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden border-b border-white/5">
+      <section className="relative min-h-[90vh] py-20 flex items-center justify-center overflow-hidden border-b border-white/5">
         <div className="absolute inset-0 bg-gradient-to-b from-accent-gold/5 to-transparent pointer-events-none" />
         <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-gold/20 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-gold/10 rounded-full blur-[120px] animate-pulse delay-1000" />
+          <div className="absolute top-1/4 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-accent-gold/20 rounded-full blur-[100px] md:blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 md:w-96 md:h-96 bg-accent-gold/10 rounded-full blur-[100px] md:blur-[120px] animate-pulse delay-1000" />
         </div>
 
-        <div className="container mx-auto px-4 relative z-10 text-center">
+        <div className="container mx-auto px-6 relative z-10 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -63,10 +63,10 @@ export default function BecomeHostPage() {
             <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-accent-gold/10 border border-accent-gold/20 text-accent-gold text-xs font-bold uppercase tracking-[0.2em]">
               Nuovo Standard di Hosting
             </span>
-            <h1 className="font-heading text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+            <h1 className="font-heading text-4xl sm:text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-[1.1]">
               Diventa un Host su <span className="text-accent-gold">{siteName}</span>
             </h1>
-            <p className="text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed px-2">
               Pubblica la tua struttura gratuitamente, mantieni il controllo totale e ricevi il 50% della caparra subito tramite bonifico bancario diretto.
             </p>
             {message && (
@@ -90,7 +90,7 @@ export default function BecomeHostPage() {
                 onClick={handleRequest}
                 disabled={isPending}
                 size="lg" 
-                className="bg-accent-gold text-black hover:bg-[#d4b568] px-10 rounded-full font-bold h-14 text-lg shadow-2xl shadow-accent-gold/20 min-w-[240px]"
+                className="bg-accent-gold text-black hover:bg-[#d4b568] px-10 rounded-full font-bold h-14 text-lg shadow-2xl shadow-accent-gold/20 w-full sm:w-auto min-w-[240px]"
               >
                 {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Richiedi di diventare Host'}
               </Button>
@@ -199,13 +199,13 @@ export default function BecomeHostPage() {
       </section>
 
       {/* Testimonials or Info Card */}
-      <section className="py-24 bg-bg-surface/30">
+      <section className="py-20 md:py-24 bg-bg-surface/30">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto p-12 rounded-[40px] bg-gradient-to-br from-accent-gold/20 to-bg-surface border border-accent-gold/30 text-center relative overflow-hidden">
+          <div className="max-w-4xl mx-auto p-8 sm:p-12 rounded-[32px] sm:rounded-[40px] bg-gradient-to-br from-accent-gold/20 to-bg-surface border border-accent-gold/30 text-center relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none" />
-             <Info className="w-12 h-12 text-accent-gold mx-auto mb-6" />
-             <h3 className="text-3xl font-bold mb-6">Pronto per il salto di qualità?</h3>
-             <p className="text-lg text-text-primary/80 mb-10 leading-relaxed">
+             <Info className="w-10 h-10 md:w-12 md:h-12 text-accent-gold mx-auto mb-6" />
+             <h3 className="text-2xl md:text-3xl font-bold mb-6">Pronto per il salto di qualità?</h3>
+             <p className="text-base md:text-lg text-text-primary/80 mb-10 leading-relaxed">
                Oltre 1.000 host in tutta Italia hanno già scelto la nostra piattaforma per la trasparenza e la velocità dei pagamenti. Non aspettare che altri prendano il tuo posto.
              </p>
              {message && (
@@ -223,7 +223,7 @@ export default function BecomeHostPage() {
                 onClick={handleRequest}
                 disabled={isPending}
                 size="lg" 
-                className="bg-white text-black hover:bg-neutral-200 px-12 rounded-full font-bold h-16 text-xl shadow-2xl min-w-[300px]"
+                className="bg-white text-black hover:bg-neutral-200 px-12 rounded-full font-bold h-16 text-xl shadow-2xl w-full sm:w-auto min-w-[280px]"
              >
                 {isPending ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Sì, voglio diventare Host!'}
              </Button>

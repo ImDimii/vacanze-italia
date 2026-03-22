@@ -40,27 +40,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    async function getInitialSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (mounted && session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-      }
-      if (mounted) setLoading(false);
-    }
-    
-    getInitialSession();
-
+    // Use onAuthStateChange as the single source of truth for auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        // Only set loading false AFTER fetching profile
+        const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+        if (mounted && data) setProfile(data);
       } else {
         setProfile(null);
       }
-      setLoading(false);
+      
+      if (mounted) setLoading(false);
     });
 
     return () => {
@@ -71,13 +66,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      setLoading(true);
       await supabase.auth.signOut();
+      
+      // Clear all state immediately
       setUser(null);
       setProfile(null);
-      router.push('/');
-      router.refresh();
+      
+      // Perform a clean redirect and refresh
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
+      // Fallback: still clear client state and redirect
+      setUser(null);
+      setProfile(null);
+      window.location.href = '/';
+    } finally {
+      setLoading(false);
     }
   };
 
