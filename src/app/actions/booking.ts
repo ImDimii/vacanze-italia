@@ -2,9 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { sendEmail } from '@/lib/email';
-import BookingStatusEmail from '@/components/emails/BookingStatusEmail';
-import { createInternalNotification } from './notification';
+import { createInternalNotification, sendBookingStatusEmail } from '@/lib/notifications';
 
 export async function cancelBooking(bookingId: string, refundInfo?: string) {
   const supabase = await createClient();
@@ -54,29 +52,23 @@ export async function cancelBooking(bookingId: string, refundInfo?: string) {
     return { success: false, error: updateError.message || 'Impossibile completare l\'operazione. Riprova più tardi.' };
   }
 
-  // Trigger Cancel Email if the status actually changed to cancelled
-  if (newStatus === 'cancelled') {
+  // Handle Email and Notifications
+  const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
+  const { data: guest } = await supabase.from('profiles').select('full_name, email').eq('id', booking.guest_id).single();
+
+  if (newStatus === 'cancelled' && guest?.email) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vacanzeitalia.it';
-    const { data: guest } = await supabase.from('profiles').select('full_name, email').eq('id', booking.guest_id).single();
-    const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
-    
-    if (guest?.email) {
-      await sendEmail({
-        to: guest.email,
-        subject: `Prenotazione Annullata - ${property?.title || 'la proprietà'}`,
-        react: BookingStatusEmail({
-          guestName: guest?.full_name || 'Ospite',
-          propertyName: property?.title || 'la proprietà',
-          status: 'cancelled',
-          bookingUrl: `${baseUrl}/dashboard/bookings/${bookingId}`
-        })
-      });
-    }
+    await sendBookingStatusEmail(
+      guest.email,
+      guest.full_name || 'Ospite',
+      property?.title || 'la struttura',
+      'cancelled',
+      `${baseUrl}/dashboard/bookings/${bookingId}`
+    );
   }
 
   // Create Notification
   try {
-    const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
     const recipientId = isGuest ? booking.host_id : booking.guest_id;
     const notifyTitle = newStatus === 'cancelled' ? 'Prenotazione Annullata' : 'Richiesta Annullamento';
     const notifyContent = newStatus === 'cancelled' 
@@ -91,7 +83,7 @@ export async function cancelBooking(bookingId: string, refundInfo?: string) {
       `/dashboard/bookings/${bookingId}`
     );
   } catch (notifyError) {
-    console.error('Notification error:', notifyError);
+    console.error('Notification error in cancelBooking:', notifyError);
   }
 
   revalidatePath('/dashboard');
@@ -131,27 +123,23 @@ export async function approveCancellation(bookingId: string) {
     return { success: false, error: 'Impossibile approvare l\'annullamento.' };
   }
 
-  // Trigger Cancel Email
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vacanzeitalia.it';
-  const { data: guest } = await supabase.from('profiles').select('full_name, email').eq('id', booking.guest_id).single();
+  // Handle Email and Notifications
   const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
+  const { data: guest } = await supabase.from('profiles').select('full_name, email').eq('id', booking.guest_id).single();
 
   if (guest?.email) {
-    await sendEmail({
-      to: guest.email,
-      subject: `Prenotazione Annullata dal Proprietario - ${property?.title || 'la proprietà'}`,
-      react: BookingStatusEmail({
-        guestName: guest?.full_name || 'Ospite',
-        propertyName: property?.title || 'la proprietà',
-        status: 'cancelled',
-        bookingUrl: `${baseUrl}/dashboard/bookings/${bookingId}`
-      })
-    });
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://vacanzeitalia.it';
+    await sendBookingStatusEmail(
+      guest.email,
+      guest.full_name || 'Ospite',
+      property?.title || 'la struttura',
+      'cancelled',
+      `${baseUrl}/dashboard/bookings/${bookingId}`
+    );
   }
 
   // Create Notification for guest
   try {
-    const { data: property } = await supabase.from('properties').select('title').eq('id', booking.property_id).single();
     await createInternalNotification(
       booking.guest_id,
       'booking_update',
@@ -160,7 +148,7 @@ export async function approveCancellation(bookingId: string) {
       `/dashboard/bookings/${bookingId}`
     );
   } catch (notifyError) {
-    console.error('Notification error:', notifyError);
+    console.error('Notification error in approveCancellation:', notifyError);
   }
 
   revalidatePath('/dashboard');

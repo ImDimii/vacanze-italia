@@ -3,6 +3,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
+/**
+ * Client-facing Server Actions for notifications
+ */
+
 export async function getNotifications() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -59,29 +63,5 @@ export async function markAllAsRead() {
   return { success: true };
 }
 
-// Utility to create internal notifications (called from other server actions)
-export async function createInternalNotification(
-  userId: string, 
-  type: 'new_message' | 'booking_update' | 'system', 
-  title: string, 
-  content: string, 
-  link?: string
-) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from('notifications')
-    .insert({
-      user_id: userId,
-      type,
-      title,
-      content,
-      link
-    });
-
-  if (error) {
-    console.error('Error creating internal notification:', error);
-    return { success: false, error: error.message };
-  }
-
-  return { success: true };
-}
+// NOTE: createInternalNotification moved to @/lib/notifications.ts 
+// to avoid bundling issues when this file is imported by Client Components

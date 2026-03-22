@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { createInternalNotification } from './notification';
+import { createInternalNotification } from '@/lib/notifications';
 
 export async function getMessages(bookingId: string) {
   const supabase = await createClient();
@@ -67,7 +67,7 @@ export async function sendMessage(bookingId: string, content: string) {
       );
     }
   } catch (notifyError) {
-    console.error('Notification error:', notifyError);
+    console.error('Notification error in sendMessage:', notifyError);
   }
 
   return { success: true };
