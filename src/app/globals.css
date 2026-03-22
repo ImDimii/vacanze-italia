@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme inline {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-heading: var(--font-heading);
+
+  /* Custom colors */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-card: var(--bg-card);
+  --color-bg-surface: var(--bg-surface);
+  --color-border: var(--border);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-blue: var(--accent-blue);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+
+  /* Mapping shadcn variables */
+  --color-card: var(--bg-card);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-surface);
+  --color-popover-foreground: var(--text-primary);
+  --color-primary: var(--accent-gold);
+  --color-primary-foreground: #000000;
+  --color-secondary: var(--bg-surface);
+  --color-secondary-foreground: var(--text-primary);
+  --color-muted: var(--bg-surface);
+  --color-muted-foreground: var(--text-secondary);
+  --color-accent: var(--accent-gold);
+  --color-accent-foreground: #000000;
+  --color-destructive: var(--error);
+  --color-destructive-foreground: #ffffff;
+  --color-ring: var(--accent-gold);
+  --color-input: var(--bg-surface);
+  
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.6);
+}
+
+:root {
+  --bg-primary: #0A0A0A;
+  --bg-card: #111111;
+  --bg-surface: #1A1A1A;
+  --border: #2A2A2A;
+  --accent-gold: #E8C97D;
+  --accent-blue: #7D9FE8;
+  --text-primary: #F5F5F5;
+  --text-secondary: #888888;
+  --success: #4CAF50;
+  --error: #E85D5D;
+  --warning: #F5A623;
+  --radius: 1rem; /* rounded-2xl as per prompt */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
