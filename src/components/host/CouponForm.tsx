@@ -3,12 +3,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { createCoupon } from '@/app/actions/coupon';
-import { Loader2, Ticket, X } from 'lucide-react';
+import { Loader2, Ticket, X, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function CouponForm({ onCancel }: { onCancel: () => void }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
     code: '',
     discount_type: 'percentage',
@@ -45,9 +48,23 @@ export function CouponForm({ onCancel }: { onCancel: () => void }) {
           discount_value: '',
           usage_limit: '',
         });
+        
         router.refresh(); 
-        alert('Coupon creato con successo!');
-        if (onCancel) onCancel();
+        setShowSuccess(true);
+        
+        // Premium Confetti
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#c4a16b', '#ffffff', '#22c55e']
+        });
+
+        setTimeout(() => {
+          setShowSuccess(false);
+          if (onCancel) onCancel();
+        }, 3000);
+        
       } else {
         alert(res.error || 'Errore nella creazione del coupon');
       }
@@ -121,11 +138,33 @@ export function CouponForm({ onCancel }: { onCancel: () => void }) {
 
       <Button 
         type="submit"
-        disabled={loading}
+        disabled={loading || showSuccess}
         className="w-full h-12 bg-accent-gold text-black font-bold uppercase tracking-widest text-[10px] rounded-xl hover:bg-white transition-all shadow-lg shadow-accent-gold/10"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : 'Crea Coupon'}
       </Button>
+
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="absolute inset-0 z-50 bg-bg-surface/90 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-success/30"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
+              className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mb-4"
+            >
+              <CheckCircle2 className="w-10 h-10 text-success" />
+            </motion.div>
+            <h4 className="text-white font-bold text-lg mb-1 italic uppercase tracking-tight">Coupon Creato!</h4>
+            <p className="text-text-secondary text-xs uppercase tracking-widest font-bold">Il codice è ora attivo per i tuoi alloggi</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </form>
   );
 }
